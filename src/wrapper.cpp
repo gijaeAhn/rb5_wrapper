@@ -13,9 +13,9 @@
 #include <errno.h>
 #include <rb5_ros_wrapper/rx.h>
 
-#define IPAddr "127.0.0.9"
+#define IPAddr "10.0.2.7"
 
-const int PORT = 4000;
+const int PORT = 5000;
 
 int sock = 0;
 struct sockaddr_in ROSSocket;

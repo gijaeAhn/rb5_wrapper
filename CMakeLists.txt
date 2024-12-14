@@ -43,7 +43,7 @@ add_executable(cobot_controller src/main.cpp)
 target_link_libraries(cobot_controller ${catkin_LIBRARIES})
 
 catkin_install_python(PROGRAMS
-  src/setPosition.py
+  src/commandPosition.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

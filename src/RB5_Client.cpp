@@ -71,13 +71,13 @@ int main(int argc, char *argv[])
     ROS_INFO("Action server started.");
 
     initialize();
-    ac_.sendGoalAndWait(rb5_goal, ros::Duration(10.0));
+    ac_.sendGoalAndWait(rb5_goal, ros::Duration(2.0));
 
     setRealMode(true);
-    ac_.sendGoalAndWait(rb5_goal, ros::Duration(10.0));
+    ac_.sendGoalAndWait(rb5_goal, ros::Duration(2.0));
 
     setSpeed(0.4);
-    ac_.sendGoalAndWait(rb5_goal, ros::Duration(10.0));
+    ac_.sendGoalAndWait(rb5_goal, ros::Duration(2.0));
 
     ROS_INFO("Starting tests.");
 

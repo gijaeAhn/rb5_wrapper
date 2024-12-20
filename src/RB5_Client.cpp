@@ -51,10 +51,6 @@ void targetCallback(const geometry_msgs::TransformStamped::ConstPtr& msg) {
 }
 
 
-
-
-
-
 int main(int argc, char *argv[])
 {
     ros::init(argc, argv, "rb5_ros_client");

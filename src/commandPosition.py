@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 
 import rospy
+from std_msgs.msg import String
 from geometry_msgs.msg import TransformStamped
 import numpy as np
 import tf2_ros
-import tf_conversions
+from tf_conversions import transformations
 
-# Predefined fixed matrices for positions 1 and 2
+# Set Predefined Matrices 
+# 1 : Init Position
+# 2 : Idle Position
+# 3 : Search Position
+# 4 : Pre toss Position
+
 predefined_matrices = {
     1: np.array([[1, 0, 0, 0.2],
                  [0, 1, 0, 0.0],
@@ -16,36 +22,40 @@ predefined_matrices = {
     2: np.array([[1, 0, 0, 0.5],
                  [0, 1, 0, 0.1],
                  [0, 0, 1, 0.3],
+                 [0, 0, 0, 1.0]]),
+
+    3: np.array([[1, 0, 0, 0.2],
+                 [0, 1, 0, 0.0],
+                 [0, 0, 1, 0.3],
+                 [0, 0, 0, 1.0]]),
+    
+    4: np.array([[1, 0, 0, 0.2],
+                 [0, 1, 0, 0.0],
+                 [0, 0, 1, 0.3],
                  [0, 0, 0, 1.0]])
 }
 
-# Dynamic positions: source and target frames
-dynamic_frames = {
-    3: {"source": "source_frame_3", "target": "world"},
-    4: {"source": "source_frame_4", "target": "world"}
-}
 
 def matrix_to_quaternion(matrix):
     """Convert 4x4 transformation matrix to quaternion."""
-    return tf_conversions.transformations.quaternion_from_matrix(matrix)
+    # quaternion_from_matrix returns (x, y, z, w)
+    return transformations.quaternion_from_matrix(matrix)
 
-def get_dynamic_transform(buffer, idx):
-    """Fetch dynamic transform for positions 3 or 4."""
+
+def commandCallback(msg, pub):
+
     try:
-        source = dynamic_frames[idx]["source"]
-        target = dynamic_frames[idx]["target"]
-        return buffer.lookup_transform(target, source, rospy.Time(0), rospy.Duration(0.5))
-    except (tf2_ros.LookupException, tf2_ros.ExtrapolationException, tf2_ros.TransformException):
-        return None
+        idx = int(msg.data)
+    except ValueError:
+        rospy.logwarn("Received non-integer command. Ignoring.")
+        return
 
-def publish_position(pub, idx, tf_buffer=None):
-    """Publish fixed or dynamic position."""
     t = TransformStamped()
     t.header.stamp = rospy.Time.now()
     t.header.frame_id = "world"
     t.child_frame_id = "rb5_target"
 
-    if idx in [1, 2]:  # Fixed positions
+    if idx in predefined_matrices:
         matrix = predefined_matrices[idx]
         translation = matrix[:3, 3]
         quaternion = matrix_to_quaternion(matrix)
@@ -59,48 +69,19 @@ def publish_position(pub, idx, tf_buffer=None):
         t.transform.rotation.z = quaternion[2]
         t.transform.rotation.w = quaternion[3]
 
-    elif idx in [3, 4]:  # Dynamic positions
-        transform = get_dynamic_transform(tf_buffer, idx)
-        if transform:
-            t.transform.translation.x = transform.transform.translation.x
-            t.transform.translation.y = transform.transform.translation.y
-            t.transform.translation.z = transform.transform.translation.z
+        # Publish the transform
+        pub.publish(t)
+        rospy.loginfo(f"Published Position {idx}: Target frame updated.")
+    else:
+        rospy.logwarn("Received index not in predefined matrices. Ignoring.")
 
-            t.transform.rotation.x = transform.transform.rotation.x
-            t.transform.rotation.y = transform.transform.rotation.y
-            t.transform.rotation.z = transform.transform.rotation.z
-            t.transform.rotation.w = transform.transform.rotation.w
-        else:
-            rospy.logwarn(f"Dynamic position {idx} is not available yet.")
-            return
-
-    # Publish the transform
-    pub.publish(t)
-    rospy.loginfo(f"Published Position {idx}: Target frame updated.")
 
 def main():
-    rospy.init_node('key_input_command_tf_publisher', anonymous=True)
+    rospy.init_node('rb5_command_node', anonymous=True)
     pub = rospy.Publisher('/rb5_target', TransformStamped, queue_size=10)
+    sub = rospy.Subscriber('/rb5_keyCommand', String, commandCallback, pub)
 
-    tf_buffer = tf2_ros.Buffer()
-    tf_listener = tf2_ros.TransformListener(tf_buffer)
-
-    print("Press 1, 2 (Fixed Positions) or 3, 4 (Dynamic Positions) to publish. Press 'q' to quit.")
-    
-    while not rospy.is_shutdown():
-        user_input = input("Enter a key (1, 2, 3, 4) to publish position: ").strip()
-        if user_input.lower() == 'q':
-            print("Exiting...")
-            break
-
-        try:
-            idx = int(user_input)
-            if idx in [1, 2, 3, 4]:
-                publish_position(pub, idx, tf_buffer)
-            else:
-                print("Invalid input")
-        except ValueError:
-            print("Invalid input")
+    rospy.spin()
 
 if __name__ == "__main__":
     try:

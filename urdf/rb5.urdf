@@ -118,6 +118,18 @@
       <inertia ixx="0.000147823" ixy="2.46e-07" ixz="6.43e-07" iyy="0.000243703" iyz="-5.54e-07" izz="0.000142339"/>
     </inertial>
   </link>
+  <!-- ADD visual data here -->
+  <link name="rgbd_sensor">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://urdf/meshes/visual/???"/>
+      </geometry>
+      <material name="grey">
+        <color rgba="0.5 0.5 0.5 1.0"/>
+      </material>
+    </visual>
+  </link>
   <link name="tcp"/>
   <joint name="base" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 0.1692"/>
@@ -225,6 +237,12 @@
       <command_interface name="position"/>
       <state_interface name="position"/>
       <state_interface name="effort"/>
+    </joint>
+    <!-- Add Transfomr Parameter here -->
+    <joint name="rgbd_sensor_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="link6"/>
+      <child link="rgbd_sensor"/>
     </joint>
   </ros2_control>
 </robot>

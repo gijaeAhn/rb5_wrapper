@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.16.0)
 project(rb5_ros_wrapper)
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++14)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -16,6 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
   robot_state_publisher
   message_generation
 )
+
+find_package(Boost REQUIRED)
 
 add_message_files(
   FILES rx.msg
@@ -42,8 +44,17 @@ target_link_libraries(RB5_Client ${catkin_LIBRARIES})
 add_executable(cobot_controller src/main.cpp)
 target_link_libraries(cobot_controller ${catkin_LIBRARIES})
 
+add_dependencies(rb5_ros_wrapper ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(rb5_update ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(RB5_Client ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(cobot_controller ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+
+
 catkin_install_python(PROGRAMS
-  src/commandPosition.py
+  src/pythons/commandPosition.py
+  src/pythons/keyInput.py
+  src/pythons/tossBridge.py
+  src/pythons/tossPlanner.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

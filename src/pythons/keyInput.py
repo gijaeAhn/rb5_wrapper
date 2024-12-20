@@ -25,11 +25,13 @@ def key_publisher():
 
     while not rospy.is_shutdown():
         key = get_key()
+        msg = String()
+        msg.data = key
         if key in ['1', '2', '3', '4','t']:
             rospy.loginfo(f"Key pressed: {key}")
-            predefinedPositionpub.publish(key)
+            predefinedPositionpub.publish(msg)
         elif key == 't':
-            objectTosspub.publish(key)
+            objectTosspub.publish(msg)
         elif key == '\x03':  
             break
         rate.sleep()

@@ -14,14 +14,14 @@ from tf_conversions import transformations
 # 4 : Pre toss Position
 
 predefined_matrices = {
-    1: np.array([[1, 0, 0, 0.2],
-                 [0, 1, 0, 0.0],
-                 [0, 0, 1, 0.3],
+    1: np.array([[1, 0, 0, 0.1],
+                 [0, 0, -1, -0.2],
+                 [0, 1, 0, 0.4],
                  [0, 0, 0, 1.0]]),
 
-    2: np.array([[1, 0, 0, 0.5],
-                 [0, 1, 0, 0.1],
-                 [0, 0, 1, 0.3],
+    2: np.array([[0, 0, 1, 0.5],
+                 [1, 0, 0, 0.1],
+                 [0, 1, 0, 0.3],
                  [0, 0, 0, 1.0]]),
 
     3: np.array([[1, 0, 0, 0.2],
@@ -60,9 +60,9 @@ def commandCallback(msg, pub):
         translation = matrix[:3, 3]
         quaternion = matrix_to_quaternion(matrix)
 
-        t.transform.translation.x = translation[0]
-        t.transform.translation.y = translation[1]
-        t.transform.translation.z = translation[2]
+        t.transform.translation.x = translation[0]* 1000
+        t.transform.translation.y = translation[1]*1000
+        t.transform.translation.z = translation[2]*1000
 
         t.transform.rotation.x = quaternion[0]
         t.transform.rotation.y = quaternion[1]

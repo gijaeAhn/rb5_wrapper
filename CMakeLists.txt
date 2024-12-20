@@ -32,21 +32,21 @@ generate_messages(DEPENDENCIES actionlib_msgs std_msgs geometry_msgs)
 
 include_directories(${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 
-add_executable(rb5_ros_wrapper src/wrapper.cpp src/lanros2podo.cpp)
-target_link_libraries(rb5_ros_wrapper ${catkin_LIBRARIES})
+add_executable(rb5_wrapper src/wrapper.cpp src/lanros2podo.cpp)
+target_link_libraries(rb5_wrapper ${catkin_LIBRARIES})
 
 add_executable(rb5_update src/update.cpp src/lanpodo2ros.cpp)
 target_link_libraries(rb5_update ${catkin_LIBRARIES})
 
-add_executable(RB5_Client src/RB5_Client.cpp)
-target_link_libraries(RB5_Client ${catkin_LIBRARIES})
+add_executable(rb5_client src/RB5_Client.cpp)
+target_link_libraries(rb5_client ${catkin_LIBRARIES})
 
 add_executable(cobot_controller src/main.cpp)
 target_link_libraries(cobot_controller ${catkin_LIBRARIES})
 
-add_dependencies(rb5_ros_wrapper ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(rb5_wrapper ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(rb5_update ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
-add_dependencies(RB5_Client ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(rb5_client ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 add_dependencies(cobot_controller ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 
 

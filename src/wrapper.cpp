@@ -374,7 +374,7 @@ public:
 int main(int argc, char *argv[])
 {
 
-    ros::init(argc, argv, "rb5_ros_wrapper");
+    ros::init(argc, argv, "rb5_wrapper");
 
     if(connect() == false)
     {

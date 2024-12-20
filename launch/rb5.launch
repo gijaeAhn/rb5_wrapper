@@ -1,9 +1,17 @@
 <launch>
-  <param name="robot_description" textfile="$(find rb5_wrapper)/urdf/rb5.urdf" />
+  <param name="robot_description" textfile="$(find rb5_ros_wrapper)/urdf/rb5.urdf" />
   
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
   
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
   
-  <node name="rviz" pkg="rviz" type="rviz" required="true" />
+  <node name="rviz" pkg="rviz" type="rviz" required="true" >
+      <param name="config" value="$(find rb5_ros_wrapper)/default_config.rviz"/>
+  </node>
+  <!-- <node name="rb5_cobot_controller" pkg="rb5_ros_wrapper" type="exec" args="/home/ljw/Desktop/catkin_ws/devel/lib/rb5_ros_wrapper/cobot_controller"/> -->
+
+  <node name="rb5_update" pkg="rb5_ros_wrapper" type="rb5_update" required="true" />
+  <node name="rb5_wrapper" pkg="rb5_ros_wrapper" type="rb5_wrapper" required="true" />
+
+
 </launch>

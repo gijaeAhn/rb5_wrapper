@@ -7,24 +7,24 @@
   <link name="link0">
     <visual>
       <geometry>
-        <mesh filename="package://urdf/meshes/visual/link0.dae"/>
+        <mesh filename="package://rb5_ros_wrapper/urdf/meshes/visual/link0.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://urdf/meshes/collision/link0.stl"/>
+        <mesh filename="package://rb5_ros_wrapper/urdf/meshes/collision/link0.stl"/>
       </geometry>
     </collision>
   </link>
   <link name="link1">
     <visual>
       <geometry>
-        <mesh filename="package://urdf/meshes/visual/link1.dae"/>
+        <mesh filename="package://rb5_ros_wrapper/urdf/meshes/visual/link1.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://urdf/meshes/collision/link1.stl"/>
+        <mesh filename="package://rb5_ros_wrapper/urdf/meshes/collision/link1.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -36,12 +36,12 @@
   <link name="link2">
     <visual>
       <geometry>
-        <mesh filename="package://urdf/meshes/visual/link2.dae"/>
+        <mesh filename="package://rb5_ros_wrapper/urdf/meshes/visual/link2.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://urdf/meshes/collision/link2.stl"/>
+        <mesh filename="package://rb5_ros_wrapper/urdf/meshes/collision/link2.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -53,12 +53,12 @@
   <link name="link3">
     <visual>
       <geometry>
-        <mesh filename="package://urdf/meshes/visual/link3.dae"/>
+        <mesh filename="package://rb5_ros_wrapper/urdf/meshes/visual/link3.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://urdf/meshes/collision/link3.stl"/>
+        <mesh filename="package://rb5_ros_wrapper/urdf/meshes/collision/link3.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -70,12 +70,12 @@
   <link name="link4">
     <visual>
       <geometry>
-        <mesh filename="package://urdf/meshes/visual/link4.dae"/>
+        <mesh filename="package://rb5_ros_wrapper/urdf/meshes/visual/link4.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://urdf/meshes/collision/link4.stl"/>
+        <mesh filename="package://rb5_ros_wrapper/urdf/meshes/collision/link4.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -87,12 +87,12 @@
   <link name="link5">
     <visual>
       <geometry>
-        <mesh filename="package://urdf/meshes/visual/link5.dae"/>
+        <mesh filename="package://rb5_ros_wrapper/urdf/meshes/visual/link5.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://urdf/meshes/collision/link5.stl"/>
+        <mesh filename="package://rb5_ros_wrapper/urdf/meshes/collision/link5.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -104,12 +104,12 @@
   <link name="link6">
     <visual>
       <geometry>
-        <mesh filename="package://urdf/meshes/visual/link6.dae"/>
+        <mesh filename="package://rb5_ros_wrapper/urdf/meshes/visual/link6.dae"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://urdf/meshes/collision/link6.stl"/>
+        <mesh filename="package://rb5_ros_wrapper/urdf/meshes/collision/link6.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -121,9 +121,10 @@
   <!-- ADD visual data here -->
   <link name="rgbd_sensor">
     <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="0.05 0 0.05" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://urdf/meshes/visual/???"/>
+        <!-- <mesh filename="package://rb5_ros_wrapper/urdf/meshes/visual/???"/> -->
+      <box size="0.02 0.02 0.02"/>
       </geometry>
       <material name="grey">
         <color rgba="0.5 0.5 0.5 1.0"/>
@@ -178,6 +179,11 @@
     <parent link="link6"/>
     <child link="tcp"/>
   </joint>
+  <joint name="rgbd_sensor_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="link6"/>
+      <child link="rgbd_sensor"/>
+    </joint>
   <ros2_control name="RBPodoHardwareInterface" type="system">
     <hardware>
       <plugin>rbpodo_hardware/RBPodoHardwareInterface</plugin>
@@ -239,10 +245,6 @@
       <state_interface name="effort"/>
     </joint>
     <!-- Add Transfomr Parameter here -->
-    <joint name="rgbd_sensor_joint" type="fixed">
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <parent link="link6"/>
-      <child link="rgbd_sensor"/>
-    </joint>
+    
   </ros2_control>
 </robot>

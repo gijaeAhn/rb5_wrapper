@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
       return -1;
     }
 
-    ros::init(argc, argv, "rb5_ros_update");
+    ros::init(argc, argv, "rb5_update");
 
     ros::NodeHandle nh_;
 

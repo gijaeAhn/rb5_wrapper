@@ -14,40 +14,45 @@ void quaternionToRPY(const tf2::Quaternion& q, float rpy[3]) {
 }
 
 void targetCallback(const geometry_msgs::TransformStamped::ConstPtr& msg) {
+   float translation[3];
+   translation[0] = msg->transform.translation.x;
+   translation[1] = msg->transform.translation.y; 
+   translation[2] = msg->transform.translation.z;
 
-    float translation[3];
-    translation[0] = msg->transform.translation.x;
-    translation[1] = msg->transform.translation.y;
-    translation[2] = msg->transform.translation.z;
+   tf2::Quaternion q(
+       msg->transform.rotation.x,
+       msg->transform.rotation.y,
+       msg->transform.rotation.z,
+       msg->transform.rotation.w
+   );
+   
+   // Apply -90 degree rotation around Z
+   tf2::Quaternion rot;
+   rot.setRPY(0, 0, -M_PI/2);
+   q = q * rot;
+   
+   float rpy[3];
+   quaternionToRPY(q, rpy);
 
-    tf2::Quaternion q(
-        msg->transform.rotation.x,
-        msg->transform.rotation.y,
-        msg->transform.rotation.z,
-        msg->transform.rotation.w
-    );
-    float rpy[3];
-    quaternionToRPY(q, rpy);
+   target tempTarget;
+   tempTarget.x = translation[0];
+   tempTarget.y = translation[1];
+   tempTarget.z = translation[2];
+   tempTarget.ax = rpy[0];
+   tempTarget.ay = rpy[1];
+   tempTarget.az = rpy[2];
 
-    target tempTarget;
-    tempTarget.x = translation[0];
-    tempTarget.y = translation[1];
-    tempTarget.z = translation[2];
-    tempTarget.ax = rpy[0];
-    tempTarget.ay = rpy[1];
-    tempTarget.az = rpy[2];
+   targetQueue.push(tempTarget);
 
-    targetQueue.push(tempTarget);
+   std::cout << "Translation: ["
+             << translation[0] << ", "
+             << translation[1] << ", "
+             << translation[2] << "]" << std::endl;
 
-    std::cout << "Translation: ["
-              << translation[0] << ", "
-              << translation[1] << ", "
-              << translation[2] << "]" << std::endl;
-
-    std::cout << "RPY (degrees): ["
-              << rpy[0] << ", "
-              << rpy[1] << ", "
-              << rpy[2] << "]" << std::endl;
+   std::cout << "RPY (degrees): ["
+             << rpy[0] << ", "
+             << rpy[1] << ", "
+             << rpy[2] << "]" << std::endl;
 }
 
 
@@ -56,8 +61,6 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "rb5_ros_client");
 
     ros::NodeHandle n;
-
-    //ros::Subscriber sub = n.subscribe("/position_of_object", 1, setCoords);
 
     actionlib::SimpleActionClient<rb5_ros_wrapper::MotionAction> ac_("motion", true);
     ros::Subscriber targetSub = n.subscribe("/rb5_target", 10, targetCallback);

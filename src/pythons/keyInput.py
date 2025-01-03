@@ -21,13 +21,13 @@ def key_publisher():
     objectTosspub = rospy.Publisher('/rb5_tossCommand', String, queue_size=10)
     rate = rospy.Rate(10) 
     
-    rospy.loginfo("1 : Home Position \n  2 : Idle Position \n 3 : Search Position \n 4 : PreToss Position \n 't' : Toss \n 'q' : Quit")
+    rospy.loginfo("1 : Home Position \n  2 : Idle Position \n 3 : Search Position \n 4 : PreToss Position \n 's' : Search \n't' : Toss \n 'q' : Quit")
 
     while not rospy.is_shutdown():
         key = get_key()
         msg = String()
         msg.data = key
-        if key in ['1', '2', '3', '4','t']:
+        if key in ['1', '2', '3', '4','s','t']:
             rospy.loginfo(f"Key pressed: {key}")
             predefinedPositionpub.publish(msg)
         elif key == 't':

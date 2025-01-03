@@ -28,6 +28,11 @@ add_action_files(
   FILES Motion.action
 )
 
+add_service_files(
+  FILES
+  SearchAruco.srv
+)
+
 generate_messages(DEPENDENCIES actionlib_msgs std_msgs geometry_msgs)
 
 include_directories(${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})

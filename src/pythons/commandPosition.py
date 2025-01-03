@@ -17,6 +17,23 @@ import numpy as np
 # 3 : Search Position
 # 4 : Pre toss Position <<- This will be dynamically changed
 
+targetSpace = np.array([[1, 0,  0,  0.2],
+                        [0, 0, -1,  0.0],
+                        [0, 1,  0,  0.4],
+                        [0, 0,  0,  1.0]])
+
+# X = -11.5 mm
+# Y =  31   mm
+# Z = Unknown
+eeToRgbCenter = np.array([[1, 0,  0,  -0.0115],
+                          [0, 1,  0,   0.031 ],
+                          [0, 0,  1,   0.4   ],
+                          [0, 0,  0,  1.0]])
+searchPosition = np.array([[1, 0,  0,   0.2],
+                           [0, 1,  0,   0.0],
+                           [0, 0,  1,   0.4],
+                           [0, 0,  0,  1.0]])
+
 predefinedMatrices = {
     1: np.array([[1, 0, 0, 0.2],
                  [0, 0, -1, -0.1],
@@ -28,10 +45,8 @@ predefinedMatrices = {
                  [0, 1, 0, 0.3],
                  [0, 0, 0, 1.0]]),
 
-    3: np.array([[1, 0, 0, 0.2],
-                 [0, 1, 0, 0.0],
-                 [0, 0, 1, 0.3],
-                 [0, 0, 0, 1.0]]),
+    # Search Position should be at the center of Target Space
+    3: np.dot(searchPosition, eeToRgbCenter.transpose()),
     
     4: None
 }
@@ -59,6 +74,27 @@ def matrixToMsg(matirx,frame = "world",child_frame = "rb5_target"):
     t.transform.rotation.y = quaternion[1]
     t.transform.rotation.z = quaternion[2]
     t.transform.rotation.w = quaternion[3]
+
+def transformToMatrix(msg):
+   matrix = np.eye(4)
+   
+   # Translation
+   matrix[:3, 3] = [
+       msg.transform.translation.x,
+       msg.transform.translation.y,
+       msg.transform.translation.z
+   ]
+   
+   # Rotation from quaternion
+   quat = [
+       msg.transform.rotation.x,
+       msg.transform.rotation.y,
+       msg.transform.rotation.z,
+       msg.transform.rotation.w
+   ]
+   matrix[:3, :3] = tf.transformations.quaternion_matrix(quat)[:3, :3]
+   
+   return matrix
 
 def commandCallback(msg, pub):
    try:
@@ -127,19 +163,11 @@ def searchFunction():
        response = search_client()
        
        if response.success:
+           rospy.loginfo(f"Target Searched : Update Target Frame")
+
            camera_to_target = response.transform
-           
-           # Will vary depends on HardWare Specification
-           ee_to_camera = np.array([
-               [0, -1, 0, 0.05],
-               [1, 0, 0, 0],
-               [0, 0, 1, 0.03],
-               [0, 0, 0, 1]
-           ])
-           
-           # Static search position matrix
-           world_to_ee = predefinedMatrices[2]
-           world_to_target = np.dot(world_to_ee, np.dot(ee_to_camera, camera_to_target))
+           camera_to_target_np = transformToMatrix(camera_to_target)
+           world_to_target = np.dot(searchPosition,camera_to_target_np)
 
            # Store the target location 
            predefinedMatrices[3] = world_to_target

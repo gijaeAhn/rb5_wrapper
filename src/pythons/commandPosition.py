@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import rospy
 
 import tf2_ros
@@ -7,7 +6,7 @@ from tf_conversions import transformations
 
 from std_msgs.msg import String
 from geometry_msgs.msg import TransformStamped
-from rb5_wrapper.srv import *
+from rb5_ros_wrapper.srv import *
 
 import numpy as np
 
@@ -56,9 +55,9 @@ def matrixToQuaternion(matrix):
     # quaternion_from_matrix returns (x, y, z, w)
     return transformations.quaternion_from_matrix(matrix)
 
-def matrixToMsg(matirx,frame = "world",child_frame = "rb5_target"):
+def matrixToMsg(matrix,frame = "world",child_frame = "rb5_target"):
 
-    t = TransformStamped()
+    t = TransformStamped()  
     t.header.stamp = rospy.Time.now()
     t.header.frame_id = frame
     t.child_frame_id = child_frame
@@ -74,6 +73,8 @@ def matrixToMsg(matirx,frame = "world",child_frame = "rb5_target"):
     t.transform.rotation.y = quaternion[1]
     t.transform.rotation.z = quaternion[2]
     t.transform.rotation.w = quaternion[3]
+
+    return t
 
 def transformToMatrix(msg):
    matrix = np.eye(4)
@@ -99,29 +100,39 @@ def transformToMatrix(msg):
 def commandCallback(msg, pub):
    try:
        data = msg.data
-       if isinstance(data, int):
-           handlePosition(data, pub)
-       elif isinstance(data, str):
-           handleCommand(data)
-       else:
-           rospy.logwarn("Invalid data type received. Expected int or str.")
+       print("Data : ",data)
+       if data.isdigit():
+           print("Debug 1")
+           idx = int(data)
+           handlePosition(idx, pub)
+           print("Debug 1-1")
+
+       else :
+            print("Debug 2")
+            if data == 's':
+                command = 'search'
+            elif data == 't':
+                command = 'toss'
+            handleCommand(command,pub)
+            print("Debug 2-1")
+
    except Exception as e:
        rospy.logwarn(f"Error processing command: {e}")
 
 def handlePosition(idx, pub):
-   if idx not in predefinedMatrices:
-       rospy.logwarn(f"Invalid index {idx}: not in predefined matrices")
+   if idx-1 not in predefinedMatrices:
+       rospy.logwarn(f"Invalid index {idx-1}: not in predefined matrices")
        return
        
-   matrix = predefinedMatrices[idx]
+   matrix = predefinedMatrices[idx-1]
    
-   t = matrixToMsg(matirx)
+   t = matrixToMsg(matrix)
    pub.publish(t)
-   rospy.loginfo(f"Published Position {idx}: Target frame updated")
+   rospy.loginfo(f"Published Position {idx-1}: Target frame updated")
 
-def handleCommand(cmd):
+def handleCommand(cmd,pub):
    if cmd == 'toss':
-       tossFunction()
+       tossFunction(pub)
    elif cmd == 'search':
        searchFunction()
    else:

@@ -37,7 +37,7 @@ tmux send-keys -t 3 'sleep 1 && source ~/catkin_ws/devel/setup.bash && cd /home/
 tmux send-keys -t 4 'sleep 5 && source ~/catkin_ws/devel/setup.bash && cd /home/ljw/Desktop/catkin_ws/devel/lib/rb5_ros_wrapper &&  ./rb5_client' Enter
 tmux send-keys -t 5 'sleep 2 && source ~/catkin_ws/devel/setup.bash && cd /home/ljw/Desktop/catkin_ws/devel/lib/rb5_ros_wrapper && python3 commandPosition.py' Enter
 tmux send-keys -t 6 'sleep 2 && source ~/catkin_ws/devel/setup.bash && cd /home/ljw/Desktop/catkin_ws/devel/lib/rb5_ros_wrapper && python3 keyInput.py' Enter
-tmux send-keys -t 7 'sleep 2 && source ~/catkin_ws/devel/setup.bash && cd /home/ljw/Desktop/catkin_ws/devel/lib/rb5_ros_wrapper && python3 searchSever.py' Enter
+tmux send-keys -t 7 'sleep 2 && source ~/catkin_ws/devel/setup.bash && cd /home/ljw/Desktop/catkin_ws/devel/lib/rb5_ros_wrapper && python3 searchServer.py' Enter
 
 # Attach to session
 tmux attach-session -t throwing

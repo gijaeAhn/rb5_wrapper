@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
-
 import rospy
 
 import tf2_ros
 from tf_conversions import transformations
+import tf.transformations as tft
 
 from std_msgs.msg import String
 from geometry_msgs.msg import TransformStamped
-from rb5_wrapper.srv import *
+from rb5_ros_wrapper.srv import *
 
 import numpy as np
 
 # Set Predefined Matrices 
 # 1 : Init Position
-# 2 : Idle Position
-# 3 : Search Position
+# 2 : Search Position
+# 3 : 
 # 4 : Pre toss Position <<- This will be dynamically changed
 
 targetSpace = np.array([[1, 0,  0,  0.2],
@@ -30,19 +30,19 @@ eeToRgbCenter = np.array([[1, 0,  0,  -0.0115],
                           [0, 0,  1,   0.4   ],
                           [0, 0,  0,  1.0]])
 searchPosition = np.array([[1, 0,  0,   0.2],
-                           [0, 1,  0,   0.0],
-                           [0, 0,  1,   0.4],
+                           [0, -1,  0,   0.0],
+                           [0, 0,  -1,   0.4],
                            [0, 0,  0,  1.0]])
 
 predefinedMatrices = {
     1: np.array([[1, 0, 0, 0.2],
-                 [0, 0, -1, -0.1],
-                 [0, 1, 0, 0.4],
+                 [0, -1, 0, -0.1],
+                 [0, 0, -1, 0.4],
                  [0, 0, 0, 1.0]]),
 
-    2: np.array([[0, 0, 1, 0.5],
-                 [1, 0, 0, 0.1],
-                 [0, 1, 0, 0.3],
+    2: np.array([[1, 0, 0, 0.4],
+                 [0, -1, 0, 0.0],
+                 [0, 0, -1, 0.5],
                  [0, 0, 0, 1.0]]),
 
     # Search Position should be at the center of Target Space
@@ -56,9 +56,9 @@ def matrixToQuaternion(matrix):
     # quaternion_from_matrix returns (x, y, z, w)
     return transformations.quaternion_from_matrix(matrix)
 
-def matrixToMsg(matirx,frame = "world",child_frame = "rb5_target"):
+def matrixToMsg(matrix,frame = "world",child_frame = "rb5_target"):
 
-    t = TransformStamped()
+    t = TransformStamped()  
     t.header.stamp = rospy.Time.now()
     t.header.frame_id = frame
     t.child_frame_id = child_frame
@@ -75,36 +75,50 @@ def matrixToMsg(matirx,frame = "world",child_frame = "rb5_target"):
     t.transform.rotation.z = quaternion[2]
     t.transform.rotation.w = quaternion[3]
 
+    return t
+
 def transformToMatrix(msg):
    matrix = np.eye(4)
    
    # Translation
    matrix[:3, 3] = [
-       msg.transform.translation.x,
-       msg.transform.translation.y,
-       msg.transform.translation.z
+       msg.translation.x,
+       msg.translation.y,
+       msg.translation.z
    ]
    
    # Rotation from quaternion
    quat = [
-       msg.transform.rotation.x,
-       msg.transform.rotation.y,
-       msg.transform.rotation.z,
-       msg.transform.rotation.w
+       msg.rotation.x,
+       msg.rotation.y,
+       msg.rotation.z,
+       msg.rotation.w
    ]
-   matrix[:3, :3] = tf.transformations.quaternion_matrix(quat)[:3, :3]
+
+   matrix_4x4 = tft.quaternion_matrix(quat)
+   matrix[:3, :3] = matrix_4x4[:3, :3]
    
    return matrix
 
 def commandCallback(msg, pub):
    try:
        data = msg.data
-       if isinstance(data, int):
-           handlePosition(data, pub)
-       elif isinstance(data, str):
-           handleCommand(data)
-       else:
-           rospy.logwarn("Invalid data type received. Expected int or str.")
+       print("Data : ",data)
+       if data.isdigit():
+           print("Debug 1")
+           idx = int(data)
+           handlePosition(idx, pub)
+           print("Debug 1-1")
+
+       else :
+            print("Debug 2")
+            if data == 's':
+                command = 'search'
+            elif data == 't':
+                command = 'toss'
+            handleCommand(command,pub)
+            print("Debug 2-1")
+
    except Exception as e:
        rospy.logwarn(f"Error processing command: {e}")
 
@@ -115,13 +129,13 @@ def handlePosition(idx, pub):
        
    matrix = predefinedMatrices[idx]
    
-   t = matrixToMsg(matirx)
+   t = matrixToMsg(matrix)
    pub.publish(t)
    rospy.loginfo(f"Published Position {idx}: Target frame updated")
 
-def handleCommand(cmd):
+def handleCommand(cmd,pub):
    if cmd == 'toss':
-       tossFunction()
+       tossFunction(pub)
    elif cmd == 'search':
        searchFunction()
    else:
@@ -169,10 +183,15 @@ def searchFunction():
 
            camera_to_target = response.transform
            camera_to_target_np = transformToMatrix(camera_to_target)
-           world_to_target = np.dot(searchPosition,camera_to_target_np)
+
+           world_to_target = np.array([[1, 0, 0,  predefinedMatrices[2][0,3] -camera_to_target_np[1,3] + 0.031 ],
+                                       [0, -1, 0, predefinedMatrices[2][1,3] -camera_to_target_np[0,3] - 0.0115],
+                                       [0, 0, -1, predefinedMatrices[2][2,3]],
+                                       [0, 0, 0, 1.0]])
 
            # Store the target location 
            predefinedMatrices[3] = world_to_target
+           print("Target : \n,",world_to_target)
 
    except Exception as e:
        rospy.logerr(f"Search transform failed: {e}")

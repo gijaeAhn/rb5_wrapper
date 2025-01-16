@@ -14,30 +14,35 @@ void quaternionToRPY(const tf2::Quaternion& q, float rpy[3]) {
 }
 
 void targetCallback(const geometry_msgs::TransformStamped::ConstPtr& msg) {
-   float translation[3];
-   translation[0] = msg->transform.translation.x;
-   translation[1] = msg->transform.translation.y; 
-   translation[2] = msg->transform.translation.z;
 
-   tf2::Quaternion q(
-       msg->transform.rotation.x,
-       msg->transform.rotation.y,
-       msg->transform.rotation.z,
-       msg->transform.rotation.w
-   );
+   tf2::Vector3 translation(
+    msg->transform.translation.x,
+    msg->transform.translation.y,
+    msg->transform.translation.z
+    );
+
+    tf2::Quaternion q(
+    msg->transform.rotation.x,
+    msg->transform.rotation.y,
+    msg->transform.rotation.z,
+    msg->transform.rotation.w
+    );
    
    // Apply -90 degree rotation around Z
    tf2::Quaternion rot;
    rot.setRPY(0, 0, -M_PI/2);
    q = q * rot;
+
+   tf2::Vector3 rotated_translation = tf2::Transform(rot) * translation;
    
    float rpy[3];
    quaternionToRPY(q, rpy);
 
+
    target tempTarget;
-   tempTarget.x = translation[0];
-   tempTarget.y = translation[1];
-   tempTarget.z = translation[2];
+   tempTarget.x = rotated_translation.x();
+   tempTarget.y = rotated_translation.y();
+   tempTarget.z = rotated_translation.z();
    tempTarget.ax = rpy[0];
    tempTarget.ay = rpy[1];
    tempTarget.az = rpy[2];

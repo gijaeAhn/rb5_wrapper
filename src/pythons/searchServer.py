@@ -8,7 +8,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from geometry_msgs.msg import Transform
 from sensor_msgs.msg import Image
-from your_package.srv import SearchAruco, SearchArucoResponse
+from rb5_ros_wrapper.srv import SearchAruco, SearchArucoResponse
 
 class ArucoDetectionServer:
    def __init__(self):

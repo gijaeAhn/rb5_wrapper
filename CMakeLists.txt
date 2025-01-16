@@ -58,8 +58,9 @@ add_dependencies(cobot_controller ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gen
 catkin_install_python(PROGRAMS
   src/pythons/commandPosition.py
   src/pythons/keyInput.py
-  src/pythons/tossBridge.py
-  src/pythons/tossPlanner.py
+  src/pythons/searchServer.py
+  src/pythons/tossBridge_not_in_use.py
+  src/pythons/tossPlanner_not_in_use.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

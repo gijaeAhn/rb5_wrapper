@@ -146,28 +146,33 @@ def tossFunction(pub):
        rospy.logwarn("No predefined matrices available")
        return
        
-   if predefinedMatrices[3] is None:
+   if predefinedMatrices[4] is None:
        rospy.logwarn("No target position in slot 3")
        return
 
    try:
-       target_matrix = predefinedMatrices[3]
+       target_matrix = predefinedMatrices[4]
+       target_matrix[2,3] = -0.005
        pre_toss_matrix = np.copy(target_matrix)
 
-
        pre_toss_matrix[2,3] += 0.3  # Move up 30cm in Z
-       target_matrix[2,3] +=-0.15
        # Move to pre-toss position
        t_pre = matrixToMsg(pre_toss_matrix)
+
+       target_matrix[2,3] += 0.2
        
        pub.publish(t_pre)
        rospy.sleep(2)
+       print("Translated to pre toss position!!!")
        
        # Execute toss motion
        t_toss = matrixToMsg(target_matrix)
+       pub.publish(t_toss)
+       print("Tossing!!!")
        
        # Clear target position
-       predefinedMatrices[3] = None
+       predefinedMatrices[4] = None
+
        
    except Exception as e:
        rospy.logerr(f"Toss execution failed: {e}")
@@ -185,12 +190,12 @@ def searchFunction():
            camera_to_target_np = transformToMatrix(camera_to_target)
 
            world_to_target = np.array([[1, 0, 0,  predefinedMatrices[2][0,3] -camera_to_target_np[1,3] + 0.031 ],
-                                       [0, -1, 0, predefinedMatrices[2][1,3] -camera_to_target_np[0,3] - 0.0115],
+                                       [0, -1, 0, predefinedMatrices[2][1,3] -camera_to_target_np[0,3] - 0.0115 + 0.05],
                                        [0, 0, -1, predefinedMatrices[2][2,3]],
                                        [0, 0, 0, 1.0]])
 
            # Store the target location 
-           predefinedMatrices[3] = world_to_target
+           predefinedMatrices[4] = world_to_target
            print("Target : \n,",world_to_target)
 
    except Exception as e:

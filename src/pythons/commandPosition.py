@@ -139,8 +139,10 @@ def tossFunction(pub):
    try:
        target_matrix = predefinedMatrices[3]
        pre_toss_matrix = np.copy(target_matrix)
+
+
        pre_toss_matrix[2,3] += 0.3  # Move up 30cm in Z
-       
+       target_matrix[2,3] +=-0.15
        # Move to pre-toss position
        t_pre = matrixToMsg(pre_toss_matrix)
        

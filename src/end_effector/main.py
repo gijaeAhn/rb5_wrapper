@@ -8,25 +8,20 @@ import threading
 import GRIPPER.Gripper
 from GRIPPER import Gripper
 from GRIPPER import mainGripper
-from RB5 import mainRB5
+
+from lobbing import Lobbing
+
 
 def threadGripper():
     while(True):
-        print("[GRIPPER THREAD]")
-        mainGripper.mainGripper()
-
-def threadRB5():
-    print("[RB5 THREAD]")
-    # mainRB5.mainRB5()
+        # print("[GRIPPER THREAD]")
+        # mainGripper.mainGripper()
+        Lobbing()
 
 if __name__ == "__main__":
-    thread1 = threading.Thread(target=threadGripper)
-    thread2 = threading.Thread(target=threadRB5)
+    gripperThread = threading.Thread(target=threadGripper)
 
-    thread1.start()
-    thread2.start()
-
-    thread1.join()
-    thread2.join()
+    gripperThread.start()
+    gripperThread.join()
 
     print("Program is terminated.")

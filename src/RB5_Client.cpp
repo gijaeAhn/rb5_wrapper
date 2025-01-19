@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
     setRealMode(true);
     ac_.sendGoalAndWait(rb5_goal, ros::Duration(2.0));
 
-    setSpeed(0.4);
+    setSpeed(0.7);
     ac_.sendGoalAndWait(rb5_goal, ros::Duration(2.0));
 
     ROS_INFO("Starting tests.");

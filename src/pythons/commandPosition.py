@@ -6,6 +6,7 @@ from tf_conversions import transformations
 import tf.transformations as tft
 
 from std_msgs.msg import String
+from std_msgs.msg import Bool
 from geometry_msgs.msg import TransformStamped
 from rb5_ros_wrapper.srv import *
 
@@ -29,7 +30,7 @@ eeToRgbCenter = np.array([[1, 0,  0,  -0.0115],
                           [0, 1,  0,   0.031 ],
                           [0, 0,  1,   0.4   ],
                           [0, 0,  0,  1.0]])
-searchPosition = np.array([[1, 0,  0,   0.2],
+searchPosition = np.array([[1, 0,  0,   0.4],
                            [0, -1,  0,   0.0],
                            [0, 0,  -1,   0.4],
                            [0, 0,  0,  1.0]])
@@ -42,7 +43,7 @@ predefinedMatrices = {
 
     2: np.array([[1, 0, 0, 0.4],
                  [0, -1, 0, 0.0],
-                 [0, 0, -1, 0.5],
+                 [0, 0, -1, 0.4],
                  [0, 0, 0, 1.0]]),
 
     # Search Position should be at the center of Target Space
@@ -100,7 +101,8 @@ def transformToMatrix(msg):
    
    return matrix
 
-def commandCallback(msg, pub):
+def commandCallback(msg, args):
+   pub, eePub = args
    try:
        data = msg.data
        print("Data : ",data)
@@ -116,7 +118,7 @@ def commandCallback(msg, pub):
                 command = 'search'
             elif data == 't':
                 command = 'toss'
-            handleCommand(command,pub)
+            handleCommand(command,pub,eePub)
             print("Debug 2-1")
 
    except Exception as e:
@@ -133,11 +135,11 @@ def handlePosition(idx, pub):
    pub.publish(t)
    rospy.loginfo(f"Published Position {idx}: Target frame updated")
 
-def handleCommand(cmd,pub):
+def handleCommand(cmd,pub,eePub):
    if cmd == 'toss':
        tossFunction(pub)
    elif cmd == 'search':
-       searchFunction()
+       searchFunction(eePub)
    else:
        rospy.logwarn(f"Unknown command: {cmd}")
 
@@ -153,14 +155,18 @@ def tossFunction(pub):
    try:
        target_matrix = predefinedMatrices[4]
        target_matrix[2,3] = -0.005
+
        pre_toss_matrix = np.copy(target_matrix)
 
+       pre_toss_matrix[0,3] -= 0.1 
        pre_toss_matrix[2,3] += 0.3  # Move up 30cm in Z
        # Move to pre-toss position
        t_pre = matrixToMsg(pre_toss_matrix)
 
-       target_matrix[2,3] += 0.2
-       
+       target_matrix[2,3] += 0.172
+       finishing_matrix = np.copy(target_matrix)
+       finishing_matrix[0,3] += 0.1
+       f_toss = matrixToMsg(finishing_matrix)
        pub.publish(t_pre)
        rospy.sleep(2)
        print("Translated to pre toss position!!!")
@@ -169,7 +175,10 @@ def tossFunction(pub):
        t_toss = matrixToMsg(target_matrix)
        pub.publish(t_toss)
        print("Tossing!!!")
+       pub.publish(f_toss)
+    
        
+
        # Clear target position
        predefinedMatrices[4] = None
 
@@ -177,26 +186,37 @@ def tossFunction(pub):
    except Exception as e:
        rospy.logerr(f"Toss execution failed: {e}")
 
-def searchFunction():
+def searchFunction(eePub):
    try:
-       rospy.wait_for_service('search_aruco', timeout=5.0)
-       search_client = rospy.ServiceProxy('search_aruco', SearchAruco)
-       response = search_client()
+        eeEnableMsg = Bool(data=False)
+        print("Change EE Control STATE")
+        eePub.publish(eeEnableMsg)
+
+        rospy.sleep(5)  
+        rospy.wait_for_service('search_aruco', timeout=5.0)
+        search_client = rospy.ServiceProxy('search_aruco', SearchAruco)
+        response = search_client()
        
-       if response.success:
-           rospy.loginfo(f"Target Searched : Update Target Frame")
+        if response.success:
+            rospy.loginfo(f"Target Searched : Update Target Frame")
 
-           camera_to_target = response.transform
-           camera_to_target_np = transformToMatrix(camera_to_target)
+            camera_to_target = response.transform
+            camera_to_target_np = transformToMatrix(camera_to_target)
 
-           world_to_target = np.array([[1, 0, 0,  predefinedMatrices[2][0,3] -camera_to_target_np[1,3] + 0.031 ],
-                                       [0, -1, 0, predefinedMatrices[2][1,3] -camera_to_target_np[0,3] - 0.0115 + 0.05],
-                                       [0, 0, -1, predefinedMatrices[2][2,3]],
-                                       [0, 0, 0, 1.0]])
-
-           # Store the target location 
-           predefinedMatrices[4] = world_to_target
-           print("Target : \n,",world_to_target)
+            print("Camera to Target : \n,",camera_to_target_np)
+    
+            world_to_target = np.array( [[1, 0, 0,  predefinedMatrices[2][0,3] -camera_to_target_np[1,3] + 0.073 - 0.175 - 0.045],
+                                        [0, -1, 0, predefinedMatrices[2][1,3] -camera_to_target_np[0,3] + 0.18 - 0.329 + 0.00041308 + 0.004],
+                                        [0, 0, -1, predefinedMatrices[2][2,3]- 0.25],
+                                        [0, 0, 0, 1.0]])
+    
+            # Store the target location 
+            predefinedMatrices[4] = world_to_target
+            print("Target : \n,",world_to_target)
+    
+        eeEnableMsg = Bool(data=True)
+        print("Change EE Control STATE")
+        eePub.publish(eeEnableMsg)
 
    except Exception as e:
        rospy.logerr(f"Search transform failed: {e}")
@@ -205,7 +225,8 @@ def searchFunction():
 def main():
     rospy.init_node('rb5_command_node', anonymous=True)
     pub = rospy.Publisher('/rb5_target', TransformStamped, queue_size=10)
-    sub = rospy.Subscriber('/rb5_keyCommand', String, commandCallback, pub)
+    eePub = rospy.Publisher('ee_enable', Bool, queue_size=5)
+    sub = rospy.Subscriber('/rb5_keyCommand', String, commandCallback, callback_args=(pub, eePub))
 
     rospy.spin()
 

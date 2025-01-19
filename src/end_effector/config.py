@@ -24,20 +24,22 @@ class eeConfig:
     CONFIG_FILE = 'eeConfig.json'
 
     _doOnce : bool = False
+    MOTOR_Y_THRESHOLD = 63
+    ENCODER_THRESHOLD = 0.008
     
     LOBBING = {
         'scoop': MotionConfig(
-            position=[151.67, 37.69],
+            position=[146, 46],
             stiffness=[20, 20],
             velocity_gain=[0.1, 0.1]
         ),
         'grab': MotionConfig(
-            position=[100.21, 40.26],
+            position=[97.17967272,66.71895146],
             stiffness=[80, 80],
             velocity_gain=[0.8, 0.8]
         ),
         'lob': MotionConfig(
-            position=[64.03, 76.77],
+            position=[50.014277 ,101.47677541],
             stiffness=[80, 80],
             velocity_gain=[0.6, 0.6]
         )
@@ -59,23 +61,7 @@ class eeConfig:
         with open(cls.CONFIG_FILE, 'w') as f:
             json.dump(config_data, f, indent=4)
     
-    @classmethod
-    def load_config(cls):
-       if os.path.exists(cls.CONFIG_FILE):
-           try:
-               with open(cls.CONFIG_FILE, 'r') as f:
-                   data = json.load(f)
-                   cls.LOBBING = {
-                       key: MotionConfig.from_dict(value) 
-                       for key, value in data['lobbing'].items()
-                   }
-           except Exception as e:
-               print(f"Error loading config file: {e}")
-               print("Using default settings and creating new config file.")
-               cls.save_config()
-       else:
-           print("Config file not found. Creating new file with default settings.")
-           cls.save_config()
+
 
     
     @classmethod

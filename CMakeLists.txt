@@ -59,8 +59,12 @@ catkin_install_python(PROGRAMS
   src/pythons/commandPosition.py
   src/pythons/keyInput.py
   src/pythons/searchServer.py
-  src/pythons/tossBridge_not_in_use.py
-  src/pythons/tossPlanner_not_in_use.py
+  # src/pythons/tossBridge_not_in_use.py
+  # src/pythons/tossPlanner_not_in_use.py
+
+  # src/end_effector/
+
+
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

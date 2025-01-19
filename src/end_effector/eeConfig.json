@@ -1,0 +1,46 @@
+{
+    "lobbing": {
+        "scoop": {
+            "position": [
+                151.67,
+                37.69
+            ],
+            "stiffness": [
+                20,
+                20
+            ],
+            "velocity_gain": [
+                0.1,
+                0.1
+            ]
+        },
+        "grab": {
+            "position": [
+                100.21,
+                40.26
+            ],
+            "stiffness": [
+                80,
+                80
+            ],
+            "velocity_gain": [
+                0.8,
+                0.8
+            ]
+        },
+        "lob": {
+            "position": [
+                64.03,
+                76.77
+            ],
+            "stiffness": [
+                80,
+                80
+            ],
+            "velocity_gain": [
+                0.6,
+                0.6
+            ]
+        }
+    }
+}

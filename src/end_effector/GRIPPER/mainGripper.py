@@ -15,17 +15,20 @@ def switchCase(case):
     if case == 'card':
         # OBJECTS.Card.ScoopingCard0()
         OBJECTS.Card.Lobbing()
-
+    
+    if case == 'searching':
+        OBJECTS.Card.Searching()
+        
 
     elif case == 'testMotion':
-        # TestMotion.TestGetEncoder()
-        TestMotion.TestMotion()
+        TestMotion.TestGetEncoder()
+        # TestMotion.TestMotion()
         # TestMotion.TestMotionStop()
         pass
 
-    else:
-        print("Check the controlSignal")
-
 # Gripper main is started
-def mainGripper():
-    switchCase(controlSignal)
+def eeTossing():
+    switchCase('card')
+
+def eeSearching():
+    switchCase('searching')
